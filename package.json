@@ -1,0 +1,15 @@
+{
+  "name": "sdai-notes-api",
+  "version": "1.0.0",
+  "description": "API сервиса «Заметки команды»: список заметок, добавление, отметка «сделано»",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  },
+  "packageManager": "pnpm@9.15.4"
+}
