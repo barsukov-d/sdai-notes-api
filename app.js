@@ -24,6 +24,14 @@ export function createApp(seed = defaultNotes()) {
     res.json({ notes: list, total: notes.length, active: notes.filter((n) => !n.done).length })
   })
 
+  app.get("/api/stats", (_req, res) => {
+    const lastNoteAt = notes.reduce(
+      (latest, n) => (latest === null || Date.parse(n.createdAt) > Date.parse(latest) ? n.createdAt : latest),
+      null,
+    )
+    res.json({ done: notes.filter((n) => n.done).length, total: notes.length, lastNoteAt })
+  })
+
   app.post("/api/notes", (req, res) => {
     const text = typeof req.body?.text === "string" ? req.body.text.trim() : ""
     if (text === "") return res.status(400).json({ error: "Текст заметки не может быть пустым" })
