@@ -24,6 +24,19 @@ export function createApp(seed = defaultNotes()) {
     res.json({ notes: list, total: notes.length, active: notes.filter((n) => !n.done).length })
   })
 
+  app.get("/api/stats", (_req, res) => {
+    // Самая новая по дате создания; при равных датах — добавленная позже.
+    const last = notes.reduce(
+      (best, n) => (best === null || Date.parse(n.createdAt) >= Date.parse(best.createdAt) ? n : best),
+      null,
+    )
+    res.json({
+      done: notes.filter((n) => n.done).length,
+      total: notes.length,
+      lastNoteAt: last ? new Date(last.createdAt).toISOString() : null,
+    })
+  })
+
   app.post("/api/notes", (req, res) => {
     const text = typeof req.body?.text === "string" ? req.body.text.trim() : ""
     if (text === "") return res.status(400).json({ error: "Текст заметки не может быть пустым" })
