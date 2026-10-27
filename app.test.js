@@ -2,8 +2,8 @@ import { test } from "node:test"
 import assert from "node:assert/strict"
 import { createApp } from "./app.js"
 
-async function withServer(fn) {
-  const server = createApp().listen(0, "127.0.0.1")
+async function withServer(fn, seed) {
+  const server = createApp(seed).listen(0, "127.0.0.1")
   await new Promise((ok) => server.once("listening", ok))
   const base = `http://127.0.0.1:${server.address().port}`
   try {
@@ -61,5 +61,42 @@ test("версия сервера", async () => {
   await withServer(async (base) => {
     const body = await (await fetch(`${base}/api/version`)).json()
     assert.match(body.version, /^\d+\.\d+\.\d+$/)
+  })
+})
+
+test("сводка: сделано, всего и дата последней заметки", async () => {
+  const seed = [
+    { id: 1, text: "Первая", done: false, createdAt: "2026-10-20T09:00:00.000Z" },
+    { id: 2, text: "Самая новая", done: false, createdAt: "2026-10-22T14:15:00.000Z" },
+    { id: 3, text: "Сделанная", done: true, createdAt: "2026-10-21T10:30:00.000Z" },
+  ]
+  await withServer(async (base) => {
+    const res = await fetch(`${base}/api/stats`)
+    assert.equal(res.status, 200)
+    assert.deepEqual(await res.json(), { done: 1, total: 3, lastNoteAt: "2026-10-22T14:15:00.000Z" })
+  }, seed)
+})
+
+test("сводка на пустом хранилище", async () => {
+  await withServer(async (base) => {
+    const res = await fetch(`${base}/api/stats`)
+    assert.equal(res.status, 200)
+    assert.deepEqual(await res.json(), { done: 0, total: 0, lastNoteAt: null })
+  }, [])
+})
+
+test("сводка обновляется после добавления и удаления", async () => {
+  await withServer(async (base) => {
+    const created = await fetch(`${base}/api/notes`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text: "Ещё одна" }),
+    })
+    const note = await created.json()
+    let stats = await (await fetch(`${base}/api/stats`)).json()
+    assert.deepEqual(stats, { done: 1, total: 4, lastNoteAt: note.createdAt })
+    await fetch(`${base}/api/notes/${note.id}`, { method: "DELETE" })
+    stats = await (await fetch(`${base}/api/stats`)).json()
+    assert.deepEqual(stats, { done: 1, total: 3, lastNoteAt: "2026-10-22T14:15:00.000Z" })
   })
 })
