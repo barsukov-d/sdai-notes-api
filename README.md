@@ -19,6 +19,7 @@ pnpm test
 | POST | `/api/notes` | добавить заметку `{ "text": "…" }` |
 | PATCH | `/api/notes/:id` | отметить `{ "done": true }` |
 | DELETE | `/api/notes/:id` | удалить |
+| GET | `/api/stats` | сводка `{ "done", "total", "lastNoteAt" }` |
 | GET | `/api/version` | версия сервера |
 | GET | `/api/health` | проверка, что сервер жив |
 
