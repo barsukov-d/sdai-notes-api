@@ -106,7 +106,8 @@ function mountDbCheck(app, url = process.env.CHECK_DB_URL) {
 }
 
 const DB_CHECK_PAGE = `<!doctype html><html lang="ru"><meta charset="utf-8"><title>Заметки в базе</title>
-<h1>Заметки в базе</h1><p id="status" data-testid="db-status"></p>
+<p id="status" data-testid="db-status"></p><h1>Заметки в базе</h1>
+<p data-testid="db-caption">Заметки хранятся в базе данных</p>
 <form id="f"><input id="t" data-testid="note-text" placeholder="Текст заметки" required>
 <button data-testid="note-add">Добавить</button></form><ul id="l" data-testid="notes"></ul>
 <script>

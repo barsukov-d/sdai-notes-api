@@ -63,3 +63,11 @@ test("версия сервера", async () => {
     assert.match(body.version, /^\d+\.\d+\.\d+$/)
   })
 })
+
+test("страница проверки базы: подпись под заголовком", async () => {
+  await withServer(async (base) => {
+    const html = await (await fetch(`${base}/api/db-check`)).text()
+    assert.match(html, /<h1>Заметки в базе<\/h1>\s*<p[^>]*>Заметки хранятся в базе данных<\/p>/)
+    assert.ok(html.indexOf('id="status"') < html.indexOf("<h1>"))
+  })
+})
