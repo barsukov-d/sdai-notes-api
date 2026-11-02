@@ -61,7 +61,7 @@ export function defaultNotes() {
 }
 
 /**
- * Проверка доступа к базе (ALL-8, 7в): страница /db-check и заметки в базе из
+ * Проверка доступа к базе (ALL-8, 7в): страница /api/db-check и заметки в базе из
  * CHECK_DB_URL. Адрес и текст ошибки подключения наружу и в журнал не попадают:
  * в тексте ошибки бывает адрес. Обычные заметки выше живут в памяти, как раньше.
  */
@@ -75,7 +75,7 @@ function mountDbCheck(app, url = process.env.CHECK_DB_URL) {
       )
     : Promise.resolve(false)
 
-  app.get("/health/db", async (_req, res) => {
+  app.get("/api/health/db", async (_req, res) => {
     if (!pool) return res.status(503).json({ ok: false, db: "none", text: "нет базы" })
     try {
       const { rows } = await pool.query("SELECT value FROM marker LIMIT 1")
@@ -102,7 +102,7 @@ function mountDbCheck(app, url = process.env.CHECK_DB_URL) {
     const { rows } = await pool.query("INSERT INTO db_notes (text) VALUES ($1) RETURNING id, text", [text])
     res.status(201).json(rows[0])
   })
-  app.get("/db-check", (_req, res) => res.type("html").send(DB_CHECK_PAGE))
+  app.get("/api/db-check", (_req, res) => res.type("html").send(DB_CHECK_PAGE))
 }
 
 const DB_CHECK_PAGE = `<!doctype html><html lang="ru"><meta charset="utf-8"><title>Заметки в базе</title>
@@ -111,7 +111,7 @@ const DB_CHECK_PAGE = `<!doctype html><html lang="ru"><meta charset="utf-8"><tit
 <button data-testid="note-add">Добавить</button></form><ul id="l" data-testid="notes"></ul>
 <script>
 const load = async () => {
-  const h = await (await fetch("/health/db")).json()
+  const h = await (await fetch("/api/health/db")).json()
   document.getElementById("status").textContent = h.ok ? "База подключена" : "Нет базы"
   const r = await fetch("/api/db-notes")
   const l = document.getElementById("l")
